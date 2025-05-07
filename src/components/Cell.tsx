@@ -73,6 +73,7 @@ const Cell: React.FC<CellProps> = memo(({
           y={y + hexHeight * 0.15}
           width={hexWidth * 0.7}
           height={hexHeight * 0.7}
+          {...(rotate30 ? { transform: `rotate(-30, ${centerX}, ${centerY})` } : {})}
         >
           <input
             ref={inputRef}
@@ -96,7 +97,6 @@ const Cell: React.FC<CellProps> = memo(({
               padding: 0,
               margin: 0,
               boxSizing: 'border-box',
-              // ...(rotate30 ? { transform: `rotate(-30, ${centerX}, ${centerY})` } : {})
             }}
           />
         </foreignObject>
