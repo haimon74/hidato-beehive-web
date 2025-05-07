@@ -1,0 +1,12 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.board {
+  display: grid;
+  border: 2px solid #333;
+  box-sizing: border-box;
+} 

@@ -1,0 +1,28 @@
+.controls {
+  margin-bottom: 20px;
+}
+
+.button {
+  margin: 0 10px;
+  padding: 8px 16px;
+  font-size: 1rem;
+  cursor: pointer;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
+
+.toggleButton {
+  background-color: #4caf50;
+}
+
+.toggleButtonActive {
+  background-color: #f44336;
+}
+
+.select {
+  margin: 0 10px;
+  padding: 8px;
+  font-size: 1rem;
+} 
