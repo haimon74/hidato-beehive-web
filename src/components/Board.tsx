@@ -66,7 +66,7 @@ const Board = forwardRef<BoardRef, BoardProps>(({
     if (checkSolution(grid, N)) {
       onComplete();
     }
-  }, [grid, onComplete]);
+  }, [grid, onComplete, N]);
 
   const applyNumberToCell = useCallback((row: number, col: number, value: string) => {
     const newGrid = grid.map(row => [...row]);
