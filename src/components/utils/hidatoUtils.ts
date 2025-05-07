@@ -387,7 +387,7 @@ export function maskHexGrid(solution: Grid, revealCount: number): Grid {
     if (solution[y][x] === 1) firstPos = [x, y];
     if (solution[y][x] === max) lastPos = [x, y];
   }
-  console.log(max);
+  // console.log(max);
   // Remove 1 and max from reveal candidates
   const filtered = positions.filter(([x, y]) =>
     !(firstPos && x === firstPos[0] && y === firstPos[1]) &&

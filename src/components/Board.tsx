@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useMemo, useRef, useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import Cell from './Cell';
-import { checkSolution, Grid, generateHexGrid, generateHexHamiltonianPath, maskHexGrid, getHexNeighbors } from './utils/hidatoUtils';
+import { checkSolution, Grid, generateHexGrid, generateHexHamiltonianPath, maskHexGrid } from './utils/hidatoUtils';
 import styles from './Board.module.css';
 
 interface BoardProps {
@@ -20,6 +20,7 @@ const Board = forwardRef<BoardRef, BoardProps>(({
   onComplete,
   showSolution,
 }, ref) => {
+  const [initialGrid, setInitialGrid] = useState<Grid>([]);
   const [grid, setGrid] = useState<Grid>([]);
   const [solution, setSolution] = useState<Grid>([]);
   const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null);
@@ -29,10 +30,8 @@ const Board = forwardRef<BoardRef, BoardProps>(({
   const generateNewPuzzle = useCallback(() => {
     // 1. Generate the hex grid shape
     const emptyGrid = generateHexGrid(size);
-    console.log("empty grid: ", emptyGrid);
     // 2. Generate a Hamiltonian path for the hex grid
     const solution = generateHexHamiltonianPath(emptyGrid);
-    console.log("solution: ", solution);
     // 3. Count non-null cells
     const totalCells = solution.flat().filter(cell => cell !== null).length;
     // 4. Determine reveal count based on difficulty
@@ -45,6 +44,7 @@ const Board = forwardRef<BoardRef, BoardProps>(({
     // 5. Mask the solution to create the puzzle
     const puzzle = maskHexGrid(solution, revealCount);
     setGrid(puzzle);
+    setInitialGrid(puzzle);
     setSolution(solution);
     setSelectedCell(null);
     setInputValue('');
@@ -69,16 +69,13 @@ const Board = forwardRef<BoardRef, BoardProps>(({
   }, [grid, onComplete]);
 
   const applyNumberToCell = useCallback((row: number, col: number, value: string) => {
-    const numValue = parseInt(value);
-    if (isNaN(numValue) || numValue < 1 || numValue > size * size) {
-      return false;
-    }
-
     const newGrid = grid.map(row => [...row]);
-    newGrid[row][col] = numValue;
+    const numValue = parseInt(value);
+    const isValidNumber = !isNaN(numValue) && numValue >= 1 && numValue <= N;
+    newGrid[row][col] = isValidNumber ? numValue : 0;
     setGrid(newGrid);
-    return true;
-  }, [grid, size]);
+    return isValidNumber;
+  }, [grid, N]);
 
   const handleCellClick = useCallback((row: number, col: number) => {
     if (showSolution) return;
@@ -86,11 +83,11 @@ const Board = forwardRef<BoardRef, BoardProps>(({
     if (selectedCell) {
       const [prevRow, prevCol] = selectedCell;
       if (prevRow === row && prevCol === col) {
+        debugger;
         setSelectedCell(null);
         setInputValue('');
         return;
       }
-
       if (inputValue) {
         if (applyNumberToCell(prevRow, prevCol, inputValue)) {
           checkCompletion();
@@ -98,9 +95,9 @@ const Board = forwardRef<BoardRef, BoardProps>(({
       }
     }
 
-    if (grid[row][col] === 0) {
+    if (grid[row][col] != null) {
       setSelectedCell([row, col]);
-      setInputValue('');
+      setInputValue(grid[row][col] === 0 ? '' : String(grid[row][col]));
     }
   }, [selectedCell, inputValue, grid, showSolution, applyNumberToCell, checkCompletion]);
 
@@ -115,7 +112,7 @@ const Board = forwardRef<BoardRef, BoardProps>(({
     } else if (e.key === 'Escape') {
       setSelectedCell(null);
       setInputValue('');
-    } else if (e.key === 'Backspace') {
+    } else if (e.key === 'Backspace') {      
       setInputValue(prev => prev.slice(0, -1));
     } else if (/^[0-9]$/.test(e.key)) {
       setInputValue(prev => {
@@ -146,7 +143,6 @@ const Board = forwardRef<BoardRef, BoardProps>(({
   }, [selectedCell, inputValue, applyNumberToCell, checkCompletion]);
 
   const displayGrid = useMemo(() => showSolution ? solution : grid, [showSolution, solution, grid]);
-  console.log(displayGrid);
   return (
     <div ref={boardRef} className={styles.container}>
       <svg
@@ -171,16 +167,14 @@ const Board = forwardRef<BoardRef, BoardProps>(({
             const y = rowIndex * ((hexWidth-4) * Math.sqrt(3) / 2) + 40;
             const isFirstOrLast = cell === 1 || cell === N;
             const isSelected = selectedCell?.[0] === rowIndex && selectedCell?.[1] === colIndex;
-            if (isSelected) {
-              console.log("selected cell: ", selectedCell);
-              console.log("colIndex: ", colIndex);
-              console.log("row: ", row);
-            }
+            const isRevealed = row[colIndex] !== 0;
+            const isInitiallyRevealed = isRevealed && initialGrid[rowIndex][colIndex] !== 0;
             return (
               <Cell
                 key={`${rowIndex}-${colIndex}`}
                 value={Number(cell)}
-                isRevealed={row[colIndex] !== 0}
+                isRevealed={isRevealed}
+                isInitiallyRevealed={isInitiallyRevealed}
                 isSelected={isSelected}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
                 inputValue={selectedCell?.[0] === rowIndex && selectedCell?.[1] === colIndex ? inputValue : ''}

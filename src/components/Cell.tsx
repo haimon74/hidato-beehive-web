@@ -3,6 +3,7 @@ import React, { memo, useRef, useEffect } from 'react';
 interface CellProps {
   value: number;
   isRevealed: boolean;
+  isInitiallyRevealed: boolean;
   isSelected: boolean;
   onClick: () => void;
   inputValue: string;
@@ -20,6 +21,7 @@ interface CellProps {
 const Cell: React.FC<CellProps> = memo(({
   value,
   isRevealed,
+  isInitiallyRevealed,
   isSelected,
   onClick,
   inputValue,
@@ -65,7 +67,7 @@ const Cell: React.FC<CellProps> = memo(({
   const content = (
     <>
       <polygon points={points} fill={fill} stroke={stroke} strokeWidth={1} />
-      {isSelected && !isRevealed ? (
+      {isSelected && !isInitiallyRevealed ? (
         <foreignObject
           x={x + hexWidth * 0.15}
           y={y + hexHeight * 0.15}
@@ -76,7 +78,7 @@ const Cell: React.FC<CellProps> = memo(({
             ref={inputRef}
             type="text"
             inputMode="numeric"
-            pattern="[1-9]*"
+            pattern="[0-9]*"
             maxLength={2}
             value={inputValue}
             onChange={() => {}}
@@ -94,6 +96,7 @@ const Cell: React.FC<CellProps> = memo(({
               padding: 0,
               margin: 0,
               boxSizing: 'border-box',
+              // ...(rotate30 ? { transform: `rotate(-30, ${centerX}, ${centerY})` } : {})
             }}
           />
         </foreignObject>
