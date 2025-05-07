@@ -332,22 +332,6 @@ export const findPreviousNumber = (grid: Grid, number: number): [number, number]
   return undefined;
 };
 
-// Get valid hex neighbors for a cell in a beehive grid
-export function getHexNeighbors(x: number, y: number, grid: Grid): Position[] {
-  const neighbors: Position[] = [];
-  for (const [dx, dy] of HEX_DIRECTIONS) {
-    const nx = x + dx;
-    const ny = y + dy;
-    if (
-      ny >= 0 && ny < grid.length &&
-      nx >= 0 && nx < grid[ny].length &&
-      grid[ny][nx] !== null
-    ) {
-      neighbors.push([nx, ny]);
-    }
-  }
-  return neighbors;
-}
 
 // Generate a Hamiltonian path for a hex grid (Warnsdorff/backtracking)
 export function generateHexHamiltonianPath(grid: Grid): Grid {
@@ -425,18 +409,50 @@ export function maskHexGrid(solution: Grid, revealCount: number): Grid {
   return puzzle;
 }
 
-// Helper to generate a hexagonal grid of side length n
+// Helper to generate a beehive hexagonal grid of side length n
 export function generateHexGrid(n: number): (number | null)[][] {
   const grid: (number | null)[][] = [];
-  let cellValue = 1;
-  for (let row = 0; row < 2 * n - 1; row++) {
-    const cellsInRow = n + (row < n ? row : (2 * n - 2 - row));
-    const offset = Math.abs(n - 1 - row);
-    const rowArr: (number | null)[] = [];
-    for (let i = 0; i < offset; i++) rowArr.push(null);
-    for (let i = 0; i < cellsInRow; i++) rowArr.push(0); // Use 0 for empty cells
-    for (let i = 0; i < offset; i++) rowArr.push(null);
-    grid.push(rowArr);
+  const totalRows = 2 * n - 1;
+  let value = 1;
+  for (let row = 0; row < totalRows; row++) {
+    // Number of non-null cells in this row
+    const nonNulls = n + (row < n ? row : totalRows - 1 - row);
+    // Padding on each side
+    const pad = totalRows - nonNulls;
+    const arr: (number | null)[] = [];
+    // Left padding
+    for (let i = 0; i < pad; i++) arr.push(null);
+    // Alternate null and value
+    for (let i = 0; i < nonNulls; i++) {
+      arr.push(value++);
+      arr.push(null);
+    }
+    // Right padding
+    for (let i = 0; i < pad; i++) arr.push(null);
+    grid.push(arr);
   }
-  return grid;
+  // Now replace all numbers with 0 (empty), keep nulls
+  return grid.map(row => row.map(cell => (cell === null ? null : 0)));
+}
+
+// Beehive neighbor offsets
+const BEEHIVE_NEIGHBOR_OFFSETS = [
+  [-1, -1], [-1, 1], [1, -1], [1, 1], [0, -2], [0, 2]
+];
+
+// Get valid beehive hex neighbors for a cell
+export function getHexNeighbors(x: number, y: number, grid: Grid): Position[] {
+  const neighbors: Position[] = [];
+  for (const [dy, dx] of BEEHIVE_NEIGHBOR_OFFSETS) {
+    const ny = y + dy;
+    const nx = x + dx;
+    if (
+      ny >= 0 && ny < grid.length &&
+      nx >= 0 && nx < grid[ny].length &&
+      grid[ny][nx] !== null
+    ) {
+      neighbors.push([nx, ny]);
+    }
+  }
+  return neighbors;
 } 

@@ -29,8 +29,10 @@ const Board = forwardRef<BoardRef, BoardProps>(({
   const generateNewPuzzle = useCallback(() => {
     // 1. Generate the hex grid shape
     const emptyGrid = generateHexGrid(size);
+    console.log("empty grid: ", emptyGrid);
     // 2. Generate a Hamiltonian path for the hex grid
     const solution = generateHexHamiltonianPath(emptyGrid);
+    console.log("solution: ", solution);
     // 3. Count non-null cells
     const totalCells = solution.flat().filter(cell => cell !== null).length;
     // 4. Determine reveal count based on difficulty
@@ -144,7 +146,7 @@ const Board = forwardRef<BoardRef, BoardProps>(({
   }, [selectedCell, inputValue, applyNumberToCell, checkCompletion]);
 
   const displayGrid = useMemo(() => showSolution ? solution : grid, [showSolution, solution, grid]);
-
+  console.log(displayGrid);
   return (
     <div ref={boardRef} className={styles.container}>
       <svg
@@ -155,19 +157,31 @@ const Board = forwardRef<BoardRef, BoardProps>(({
         {displayGrid.map((row, rowIndex) => {
           // Find offset for this row
           const offset = row.findIndex(cell => cell !== null);
+          // const rowVisibleCells = row.filter(cell => cell !== null && cell !== undefined);
+          let paddingCount = 0;
           return row.map((cell, colIndex) => {
-            if (cell === null || cell === undefined) return null;
+            if (cell === null || cell === undefined) {
+              paddingCount++;
+              return null;
+            }
+            // const colIndex = row.findIndex(c => c === cell);
             const hexWidth = 40;
             const hexHeight = Math.sqrt(3) / 2 * hexWidth;
-            const x = colIndex * (6+(hexWidth * 0.75)) - offset * ((hexWidth * 0.75 / 2)+3) + 40;
+            const x = (colIndex - paddingCount) * (6+(hexWidth * 0.75)) + offset * ((hexWidth * 0.75 / 2)+3) + 40;
             const y = rowIndex * ((hexWidth-4) * Math.sqrt(3) / 2) + 40;
             const isFirstOrLast = cell === 1 || cell === N;
+            const isSelected = selectedCell?.[0] === rowIndex && selectedCell?.[1] === colIndex;
+            if (isSelected) {
+              console.log("selected cell: ", selectedCell);
+              console.log("colIndex: ", colIndex);
+              console.log("row: ", row);
+            }
             return (
               <Cell
                 key={`${rowIndex}-${colIndex}`}
-                value={cell}
-                isRevealed={grid[rowIndex][colIndex] !== 0}
-                isSelected={selectedCell?.[0] === rowIndex && selectedCell?.[1] === colIndex}
+                value={Number(cell)}
+                isRevealed={row[colIndex] !== 0}
+                isSelected={isSelected}
                 onClick={() => handleCellClick(rowIndex, colIndex)}
                 inputValue={selectedCell?.[0] === rowIndex && selectedCell?.[1] === colIndex ? inputValue : ''}
                 onKeyPress={handleKeyPress}
