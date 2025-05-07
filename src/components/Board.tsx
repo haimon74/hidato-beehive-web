@@ -63,7 +63,7 @@ const Board = forwardRef<BoardRef, BoardProps>(({
   }, [size]);
 
   const checkCompletion = useCallback(() => {
-    if (checkSolution(grid)) {
+    if (checkSolution(grid, N)) {
       onComplete();
     }
   }, [grid, onComplete]);
@@ -90,6 +90,7 @@ const Board = forwardRef<BoardRef, BoardProps>(({
       }
       if (inputValue) {
         if (applyNumberToCell(prevRow, prevCol, inputValue)) {
+          debugger;
           checkCompletion();
         }
       }
